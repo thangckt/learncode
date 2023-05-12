@@ -86,7 +86,7 @@ sphinx:
   config:
     html_show_copyright: false
     html_theme_options:
-      repository_url: https://github.com/thangckt/note_md
+      repository_url: https://github.com/thangckt/note_code
       use_download_button: false   # https://github.com/executablebooks/jupyter-book/issues/1186
       use_edit_page_button: true
       repository_branch   : 'main'
