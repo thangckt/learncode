@@ -63,3 +63,4 @@ parts:
   - caption: Webapp
     chapters:
       - file: notebook/5_webapp/0_overview.ipynb
+      - file: notebook/5_webapp/1_chatGPT.ipynb
