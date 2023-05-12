@@ -1,0 +1,909 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>work with File Names &#8212; Modeling materials with MD</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebook/2_code_tips/jp_Strings_Files';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Modeling materials with MD</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Analysis with Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../1_data_analysis/README.html">hello</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Code snippets</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="README.html">hello</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_jupyter_notebook.html">Jupyter Notebook</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="2_Matplotlib.html">Tips to use Matplotlib</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="3_Ovito.html">Visuallize by Ovito</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_Pandas.html">work with Pandas</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="5_Regular_Expressions.html">Regular Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_colab_github.html">Github</a></li>
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/0_intro.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/1_unittest.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/2_multiprocessing.html">Multiprocessing</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">C++</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/0_setup_devCpp.html">Dev C++</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/2_oop1_intro.html">Oreinted Object Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/3_oop2_constructor.html">Constructor and Destructor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/4_oop3_inheritance.html">Inheritance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/5_oop4_polymorphism.html">Polymorphism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/6_oop5_h_cpp_file.html">Separate header and cpp file</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Webapp</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/0_overview.html">PyScript: Python in the Web Browser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/1_chatGPT.html">Using openAI web by seledium</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/thangckt/note_code/edit/main/notebook/2_code_tips/jp_Strings_Files.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button"
+   title="Suggest edit"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>work with File Names</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">work with File Names</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#search-strings-in-file-name">1. Search strings in file name</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-2-problem">Python 2 problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-not-found">if not found</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glob-module">2. glob module</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#new-style-of-string-format">New style of string Format</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#repeat-format">repeat format</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#list-of-all-subdirectories-in-the-current-directory">list of all subdirectories in the current directory</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#use-glob">use glob:</a></li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Save ipynb&#39;s DIR &amp; change working folder</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;workbookDIR&#39;</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span> <span class="n">workbookDIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>     
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">workbookDIR</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section class="tex2jax_ignore mathjax_ignore" id="work-with-file-names">
+<h1>work with File Names<a class="headerlink" href="#work-with-file-names" title="Permalink to this heading">#</a></h1>
+<section id="search-strings-in-file-name">
+<h2>1. Search strings in file name<a class="headerlink" href="#search-strings-in-file-name" title="Permalink to this heading">#</a></h2>
+<p>re module
+<a class="reference external" href="https://docs.python.org/3/library/re.html">https://docs.python.org/3/library/re.html</a></p>
+<p>‘a.+b’  match any digit between ‘a’ and ‘b’ in input string
+‘\d+’   match any integer digit in input string</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">name</span><span class="o">=</span> <span class="s1">&#39;xxx_K300_dd.txt&#39;</span>
+<span class="c1"># extract Temperature from file name</span>
+<span class="n">subString</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;_K.+_&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">subString</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">subString</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;_sre.SRE_Match object; span=(3, 9), match=&#39;_K300_&#39;&gt;
+_K300_
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Temp</span><span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">subString</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>300.0
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">name</span><span class="o">=</span> <span class="s1">&#39;xxx_300K.txt&#39;</span>
+<span class="c1"># extract Temperature from file name</span>
+<span class="n">subString</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;_.+K&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">subString</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">subString</span><span class="o">==</span><span class="kc">None</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">subString</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;_sre.SRE_Match object; span=(3, 8), match=&#39;_300K&#39;&gt;
+False
+_300K
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Temp</span><span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">subString</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>300.0
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="n">a</span><span class="o">=</span><span class="s2">&quot;Grid_5x5_Reduced_25_Data1000configs_20191103_Subset_30.txt&quot;</span>
+<span class="n">subString</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;Subset_\d+&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> 
+<span class="nb">print</span><span class="p">(</span><span class="n">subString</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">subString</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Subset_30
+&lt;class &#39;str&#39;&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="o">=</span><span class="s1">&#39;Grid_8x8_Reduced_16_Data1000configs_2019-11-01_Subset_6.txt&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Grid_8x8_Reduced_16_Data1000configs_2019-11-01_Subset_6
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="python-2-problem">
+<h2>Python 2 problem<a class="headerlink" href="#python-2-problem" title="Permalink to this heading">#</a></h2>
+<p>in python 2, cannot access result string with subString[0]. must use subString.group(0)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">name</span><span class="o">=</span> <span class="s1">&#39;xxx_300K.txt&#39;</span>
+<span class="c1"># extract Temperature from file name</span>
+<span class="n">subString</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;_.+K&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="n">Temp</span><span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">subString</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>300.0
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="if-not-found">
+<h2>if not found<a class="headerlink" href="#if-not-found" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">name</span><span class="o">=</span> <span class="s1">&#39;xxx_300.txt&#39;</span>
+<span class="c1"># extract Temperature from file name</span>
+<span class="n">subString</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;_.+K&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">subString</span><span class="o">==</span><span class="kc">None</span><span class="p">)</span>
+<span class="c1"># print(subString[0])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="glob-module">
+<h2>2. glob module<a class="headerlink" href="#glob-module" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://docs.python.org/3/library/glob.html">https://docs.python.org/3/library/glob.html</a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">a</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;empty&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>empty
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>c:\devprogram\python37\lib\site-packages\ipykernel_launcher.py:1: DeprecationWarning: The truth value of an empty array is ambiguous. Returning False, but in future this will result in an error. Use `array.size &gt; 0` to check that an array is not empty.
+  &quot;&quot;&quot;Entry point for launching an IPython kernel.
+</pre></div>
+</div>
+</div>
+</div>
+<p><span class="math notranslate nohighlight">\( x = b \rho \)</span></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[0, 1, 2, 3, 4]
+[0 1 2 3 4]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[2, [0, 1, 2, 3, 4]]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([5, 0, 1, 2, 3, 4])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1
+2
+3
+4
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;Helmholtz_ASpath_Solid_100K.dat&#39;</span><span class="p">,</span><span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 1.00000000e+02, -3.33698295e+00, -2.94576400e-11],
+       [ 1.00000000e+02, -3.34935982e+00, -4.62635700e-11],
+       [ 1.00000000e+02, -3.34039947e+00, -2.05046500e-11],
+       [ 1.00000000e+02, -3.33515905e+00, -2.63748000e-11],
+       [ 1.00000000e+02, -3.33144022e+00, -2.35252600e-11],
+       [ 1.00000000e+02, -3.32855619e+00, -3.06199000e-11]])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="new-style-of-string-format">
+<h1>New style of string Format<a class="headerlink" href="#new-style-of-string-format" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://pyformat.info/">https://pyformat.info/</a></p>
+<section id="repeat-format">
+<h2>repeat format<a class="headerlink" href="#repeat-format" title="Permalink to this heading">#</a></h2>
+<p>put numbers in a “tuple” to print</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Interpolate Energy as a specific Temperature</span>
+<span class="n">sol_temp</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">900</span><span class="p">,</span> <span class="mi">880</span>
+<span class="n">liq_temp</span> <span class="o">=</span> <span class="mi">1300</span><span class="p">,</span> <span class="mi">900</span><span class="p">,</span> <span class="mi">880</span>
+<span class="n">yinter1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">sol_temp</span><span class="p">,</span> <span class="n">RSsol</span><span class="p">[</span><span class="s1">&#39;Temperature&#39;</span><span class="p">],</span> <span class="n">RSsol</span><span class="p">[</span><span class="s1">&#39;Fave&#39;</span><span class="p">])</span>
+<span class="n">yinter2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">liq_temp</span><span class="p">,</span> <span class="n">RSliq</span><span class="p">[</span><span class="s1">&#39;Temperature&#39;</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">RSliq</span><span class="p">[</span><span class="s1">&#39;Fave&#39;</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>    <span class="c1"># note: np.interp only work as xp is increasing, a[::-1] reverse order of array</span>
+<span class="n">String</span> <span class="o">=</span> <span class="s1">&#39;meltingPoint &#39;</span><span class="o">+</span> <span class="s1">&#39;enSolid_</span><span class="si">%i</span><span class="s1"> &#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">sol_temp</span><span class="p">)</span> <span class="o">+</span><span class="s1">&#39;enLiquid_</span><span class="si">%i</span><span class="s1"> &#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">liq_temp</span><span class="p">)</span> <span class="o">+</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span> <span class="o">+</span><span class="s1">&#39;</span><span class="si">%.6f</span><span class="s1"> &#39;</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">sol_temp</span><span class="p">)</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">liq_temp</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">String</span>  <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">sol_temp</span><span class="p">,</span> <span class="n">liq_temp</span><span class="p">,</span> <span class="n">meltingPoint</span><span class="p">,</span> <span class="n">yinter1</span><span class="p">,</span> <span class="n">yinter2</span><span class="p">))</span> <span class="p">)</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="list-of-all-subdirectories-in-the-current-directory">
+<h1>list of all subdirectories in the current directory<a class="headerlink" href="#list-of-all-subdirectories-in-the-current-directory" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory">https://stackoverflow.com/questions/973473/getting-a-list-of-all-subdirectories-in-the-current-directory</a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">glob</span>
+<span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> 
+<span class="n">root</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">directory</span><span class="p">)]</span>
+<span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">directory</span><span class="p">)]</span>
+<span class="n">files</span><span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">directory</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># dirs</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># subfolders = [ f.path for f in os.scandir(directory) if f.is_dir() ]</span>
+<span class="n">subfolders</span> <span class="o">=</span> <span class="p">[</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">scandir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="p">]</span>
+<span class="n">subfolders</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;#Machine_Learning&#39;,
+ &#39;.ipynb_checkpoints&#39;,
+ &#39;Add_Atom_Periodic&#39;,
+ &#39;ComputeTI&#39;,
+ &#39;Compute_on_1DumpFile&#39;,
+ &#39;Crystals_Models&#39;,
+ &#39;find_Neighbors_SliceBox&#39;,
+ &#39;find_Roots_fitting&#39;,
+ &#39;FreeEnergy_calculation&#39;,
+ &#39;Generate_EAM_tabular&#39;,
+ &#39;Histrogram_matplotlib&#39;,
+ &#39;localDensity_Voronoi_surfaceDetect&#39;,
+ &#39;LocalStressTensor_KEtensor&#39;,
+ &#39;Local_Order_Parameter&#39;,
+ &#39;Ovito_Interpreter&#39;,
+ &#39;Plumed_PYCV&#39;,
+ &#39;readWriteData&#39;,
+ &#39;RotationMatrix_DirectionalCosine&#39;,
+ &#39;Save_Memory&#39;,
+ &#39;test_MPI&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="use-glob">
+<h1>use glob:<a class="headerlink" href="#use-glob" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://stackoverflow.com/questions/14798220/how-can-i-search-sub-folders-using-glob-glob-module">https://stackoverflow.com/questions/14798220/how-can-i-search-sub-folders-using-glob-glob-module</a> <br>
+There’s a lot of confusion on this topic. Let me see if I can clarify it (Python 3.7):</p>
+<ol class="arabic simple">
+<li><p>glob.glob(‘*.txt’)                  :matches all files ending in ‘.txt’ in current directory</p></li>
+<li><p>glob.glob(‘<em>/</em>.txt’)                :same as 1</p></li>
+<li><p>glob.glob(‘**/*.txt’)               :matches all files ending in ‘.txt’ in the immediate subdirectories only, but not in the current directory</p></li>
+<li><p>glob.glob(‘*.txt’,recursive=True)   :same as 1</p></li>
+<li><p>glob.glob(‘<em>/</em>.txt’,recursive=True) :same as 3</p></li>
+<li><p>glob.glob(‘**/*.txt’,recursive=True):matches all files ending in ‘.txt’ in the current directory and in all subdirectories</p></li>
+<li><p>glob.glob(“*/”)    to return only directories.
+So it’s best to always specify recursive=True.
+<a class="reference external" href="https://stackoverflow.com/questions/6773584/how-is-pythons-glob-glob-ordered">https://stackoverflow.com/questions/6773584/how-is-pythons-glob-glob-ordered</a></p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">glob</span>
+<span class="n">subDirs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span> <span class="s2">&quot;c*/&quot;</span> <span class="p">)</span>
+<span class="c1"># subDirs = [elem.replace(&#39;\\&#39;,&#39;&#39;) for elem in  glob.glob( &quot;c*/&quot; )]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">subDirs</span><span class="p">)</span>
+<span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">myDir</span> <span class="o">+</span><span class="s2">&quot;**/*.txt&quot;</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">myDir</span> <span class="ow">in</span> <span class="n">subDirs</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;ComputeTI\\&#39;, &#39;Compute_on_1DumpFile\\&#39;, &#39;Crystals_Models\\&#39;]
+[[&#39;ComputeTI\\TI for Bulk Liquid\\mySetting.txt&#39;, &#39;ComputeTI\\TI for PLATE\\molecular_Pressure_100K.txt&#39;], [], []]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="s2">&quot;/**/*.txt&quot;</span> <span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+<span class="n">f</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\ComputeTI\\TI for Bulk Liquid\\mySetting.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\ComputeTI\\TI for Bulk Liquid\\ask_Rodolfo_012020\\mySetting.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\ComputeTI\\TI for PLATE\\molecular_Pressure_100K.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\LocalStressTensor_KEtensor\\kineticTensor_Sheng11_Plate_Al_z001_20x20x20_850K.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\Ovito_Interpreter\\avesro.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\Ovito_Interpreter\\test_ClusterAnalysis.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\Ovito_Interpreter\\test_cluster_sizes.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\readWriteData\\testWrite.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\readWriteData\\lammps_Simu\\kEinstein.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\readWriteData\\lammps_Simu\\myRDF_1Frame.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\readWriteData\\lammps_Simu\\myRDF_5Frame.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\readWriteData\\simpleTEXT\\colvar.txt&#39;,
+ &#39;D:\\work\\Tool_codes\\Tools_Python\\#JupyNotebooks\\readWriteData\\simpleTEXT\\fixAveTime.txt&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">dir</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;__add__&#39;,
+ &#39;__class__&#39;,
+ &#39;__contains__&#39;,
+ &#39;__delattr__&#39;,
+ &#39;__delitem__&#39;,
+ &#39;__dir__&#39;,
+ &#39;__doc__&#39;,
+ &#39;__eq__&#39;,
+ &#39;__format__&#39;,
+ &#39;__ge__&#39;,
+ &#39;__getattribute__&#39;,
+ &#39;__getitem__&#39;,
+ &#39;__gt__&#39;,
+ &#39;__hash__&#39;,
+ &#39;__iadd__&#39;,
+ &#39;__imul__&#39;,
+ &#39;__init__&#39;,
+ &#39;__init_subclass__&#39;,
+ &#39;__iter__&#39;,
+ &#39;__le__&#39;,
+ &#39;__len__&#39;,
+ &#39;__lt__&#39;,
+ &#39;__mul__&#39;,
+ &#39;__ne__&#39;,
+ &#39;__new__&#39;,
+ &#39;__reduce__&#39;,
+ &#39;__reduce_ex__&#39;,
+ &#39;__repr__&#39;,
+ &#39;__reversed__&#39;,
+ &#39;__rmul__&#39;,
+ &#39;__setattr__&#39;,
+ &#39;__setitem__&#39;,
+ &#39;__sizeof__&#39;,
+ &#39;__str__&#39;,
+ &#39;__subclasshook__&#39;,
+ &#39;append&#39;,
+ &#39;clear&#39;,
+ &#39;copy&#39;,
+ &#39;count&#39;,
+ &#39;extend&#39;,
+ &#39;index&#39;,
+ &#39;insert&#39;,
+ &#39;pop&#39;,
+ &#39;remove&#39;,
+ &#39;reverse&#39;,
+ &#39;sort&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./notebook/2_code_tips"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">work with File Names</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#search-strings-in-file-name">1. Search strings in file name</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-2-problem">Python 2 problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#if-not-found">if not found</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glob-module">2. glob module</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#new-style-of-string-format">New style of string Format</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#repeat-format">repeat format</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#list-of-all-subdirectories-in-the-current-directory">list of all subdirectories in the current directory</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#use-glob">use glob:</a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By thangckt
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

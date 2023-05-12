@@ -1,0 +1,979 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>compute Euclidean Distance &#8212; Modeling materials with MD</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebook/2_code_tips/jp_dotProduct_Einsum';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Modeling materials with MD</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Analysis with Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../1_data_analysis/README.html">hello</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Code snippets</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="README.html">hello</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_jupyter_notebook.html">Jupyter Notebook</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="2_Matplotlib.html">Tips to use Matplotlib</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="3_Ovito.html">Visuallize by Ovito</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_Pandas.html">work with Pandas</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="5_Regular_Expressions.html">Regular Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_colab_github.html">Github</a></li>
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/0_intro.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/1_unittest.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/2_multiprocessing.html">Multiprocessing</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">C++</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/0_setup_devCpp.html">Dev C++</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/2_oop1_intro.html">Oreinted Object Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/3_oop2_constructor.html">Constructor and Destructor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/4_oop3_inheritance.html">Inheritance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/5_oop4_polymorphism.html">Polymorphism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/6_oop5_h_cpp_file.html">Separate header and cpp file</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Webapp</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/0_overview.html">PyScript: Python in the Web Browser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/1_chatGPT.html">Using openAI web by seledium</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/thangckt/note_code/edit/main/notebook/2_code_tips/jp_dotProduct_Einsum.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button"
+   title="Suggest edit"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>compute Euclidean Distance</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">compute Euclidean Distance</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#einsum">Einsum</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#numpy-linalg-norm">numpy.linalg.norm</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scipy-spatial-distance">scipy.spatial.distance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-performance">test performance</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#dot-product">2. Dot product</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-does-einsum-do">What does einsum do?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-does-einsum-work">How does einsum work?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#here-is-what-happens-next">Here is what happens next:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-dot-product-between-a-vector-and-a-list-of-vectors">a. dot product between a vector and a list of vectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#b-dot-product-between-2-vector">b. dot product between 2 vector</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#c-element-wise-multiply-3-vectors">c. element-wise multiply 3 vectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-multiply-2-matrix-rotation-matrix">d. multiply 2 matrix (rotation matrix)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiply-1-matrix-with-each-row-of-another-matrix-3d-rotation">5. multiply 1 matrix with each row of another matrix (3D Rotation)</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="compute-euclidean-distance">
+<h1>compute Euclidean Distance<a class="headerlink" href="#compute-euclidean-distance" title="Permalink to this heading">#</a></h1>
+<p>Euclidean Distance is a termbase in mathematics; therefore I won’t discuss it at length. Generally speaking, it is a straight-line distance between two points in Euclidean Space. The formula for euclidean distance for two vectors <span class="math notranslate nohighlight">\( u, v ∈ R^n \)</span> is: <br>
+$<span class="math notranslate nohighlight">\( u=\begin{bmatrix} u_{1} &amp; u_{2} &amp; u_{3} &amp; \vdots  &amp; u_{n}  \end{bmatrix} \)</span><span class="math notranslate nohighlight">\(      
+\)</span><span class="math notranslate nohighlight">\( v=\begin{bmatrix} v_{1} &amp; v_{2} &amp; v_{3} &amp; \vdots  &amp; v_{n}  \end{bmatrix} \)</span>$</p>
+<div class="math notranslate nohighlight">
+\[ d(v,u)= \sqrt{ \sum_{i=1}^{n}|v_i-u_i|^2 } \]</div>
+<p>how to write Matrix ?</p>
+<div class="amsmath math notranslate nohighlight" id="equation-ac888dc1-c83a-411b-9c6b-46d74f0e113d">
+<span class="eqno">()<a class="headerlink" href="#equation-ac888dc1-c83a-411b-9c6b-46d74f0e113d" title="Permalink to this equation">#</a></span>\[\begin{bmatrix}
+    x_{11} &amp; x_{12} &amp; x_{13} &amp; \dots  &amp; x_{1n} \\
+    x_{21} &amp; x_{22} &amp; x_{23} &amp; \dots  &amp; x_{2n} \\
+    \vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+    x_{d1} &amp; x_{d2} &amp; x_{d3} &amp; \dots  &amp; x_{dn}
+\end{bmatrix}\]</div>
+<section id="einsum">
+<h2>Einsum<a class="headerlink" href="#einsum" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html">https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html</a> <br>
+<a class="reference external" href="https://semantive.com/high-performance-computation-in-python-numpy-2/">https://semantive.com/high-performance-computation-in-python-numpy-2/</a>  <br></p>
+<p>Einstein Summation Convention is an elegant way to express a common operation on matrices like a dot product, a sum over indices and a matrix transposition. At first, it may look impractical due to the complex syntax, but it will turn out that its implementation is very efficient.</p>
+<p><img alt="title" src="https://semantive.com/wp-content/uploads/2019/02/performance_2.png" /></p>
+</section>
+<section id="numpy-linalg-norm">
+<h2>numpy.linalg.norm<a class="headerlink" href="#numpy-linalg-norm" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.norm.html">https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.norm.html</a></p>
+</section>
+<section id="scipy-spatial-distance">
+<h2>scipy.spatial.distance<a class="headerlink" href="#scipy-spatial-distance" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html">https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html</a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">dummy_mat</span><span class="p">(</span><span class="n">mat_v</span><span class="p">,</span> <span class="n">mat_u</span><span class="p">):</span>
+   <span class="k">return</span> <span class="p">[</span><span class="nb">sum</span><span class="p">((</span><span class="n">v_i</span> <span class="o">-</span> <span class="n">u_i</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">v_i</span><span class="p">,</span> <span class="n">u_i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mat_v</span><span class="p">,</span> <span class="n">mat_u</span><span class="p">)]</span>
+
+<span class="k">def</span> <span class="nf">bare_numpy_mat</span><span class="p">(</span><span class="n">mat_v</span><span class="p">,</span> <span class="n">mat_u</span><span class="p">):</span>
+   <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">mat_v</span> <span class="o">-</span> <span class="n">mat_u</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">l2_norm_mat</span><span class="p">(</span><span class="n">mat_v</span><span class="p">,</span> <span class="n">mat_u</span><span class="p">):</span>
+   <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mat_v</span> <span class="o">-</span> <span class="n">mat_u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">scipy_distance_mat</span><span class="p">(</span><span class="n">mat_v</span><span class="p">,</span> <span class="n">mat_u</span><span class="p">):</span>
+   <span class="c1"># Unfortunately, the scipy_distance only works on 1D-arrays, so we are not able to vectorize it again.</span>
+   <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">distance</span><span class="o">.</span><span class="n">euclidean</span><span class="p">,</span> <span class="n">mat_v</span><span class="p">,</span> <span class="n">mat_u</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">einsum_mat</span><span class="p">(</span><span class="n">mat_v</span><span class="p">,</span> <span class="n">mat_u</span><span class="p">):</span>
+   <span class="n">mat_z</span> <span class="o">=</span> <span class="n">mat_v</span> <span class="o">-</span> <span class="n">mat_u</span>
+   <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">mat_z</span><span class="p">,</span> <span class="n">mat_z</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># closest point</span>
+<span class="k">def</span> <span class="nf">closest_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">node</span><span class="p">);</span>  <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">nodes</span> <span class="o">-</span> <span class="n">node</span>                                  <span class="c1"># Nx3 array of Rij vectors</span>
+    <span class="n">dist2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>      <span class="c1"># Nx1 array of distances</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">dist2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># distance from node to nodes</span>
+<span class="k">def</span> <span class="nf">dist2_node2nodes</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">node</span><span class="p">);</span>  <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">nodes</span> <span class="o">-</span> <span class="n">node</span>                                  <span class="c1"># Nx3 array of Rij vectors</span>
+    <span class="n">dist2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>      <span class="c1"># Nx1 array of distances</span>
+    <span class="k">return</span> <span class="n">dist2</span><span class="p">,</span> <span class="n">d</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="test-performance">
+<h2>test performance<a class="headerlink" href="#test-performance" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[ 0  0  0]
+ [ 1  1  1]
+ [-4 -4 -4]]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">b</span><span class="o">-</span><span class="n">a</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="c1"># use bare numpy</span>
+<span class="n">d1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>17.9 µs ± 193 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="c1"># use einsumn</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>11 µs ± 108 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="c1"># dummy use</span>
+<span class="n">d3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>12.4 µs ± 440 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">b</span><span class="o">-</span><span class="n">a</span>
+
+<span class="n">d1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+<span class="n">d3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">d1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[ 1.41421356  5.38516481 10.48808848 15.65247584 20.83266666 26.01922366
+ 31.20897307 36.40054945 41.59326869 46.78675026]
+[ 1.41421356  5.38516481 10.48808848 15.65247584 20.83266666 26.01922366
+ 31.20897307 36.40054945 41.59326869 46.78675026]
+[ 1.41421356  5.38516481 10.48808848 15.65247584 20.83266666 26.01922366
+ 31.20897307 36.40054945 41.59326869 46.78675026]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="dot-product">
+<h1>2. Dot product<a class="headerlink" href="#dot-product" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://stackoverflow.com/questions/26089893/understanding-numpys-einsum">https://stackoverflow.com/questions/26089893/understanding-numpys-einsum</a></p>
+<section id="what-does-einsum-do">
+<h2>What does einsum do?<a class="headerlink" href="#what-does-einsum-do" title="Permalink to this heading">#</a></h2>
+<p>Imagine that we have two multi-dimensional arrays, A and B. Now let’s suppose we want to…</p>
+<p>multiply A with B in a particular way to create new array of products; and then maybe
+sum this new array along particular axes; and then maybe
+transpose the axes of the new array in a particular order.
+There’s a good chance that einsum will help us do this faster and more memory-efficiently that combinations of the NumPy functions like multiply, sum and transpose will allow.</p>
+</section>
+<section id="how-does-einsum-work">
+<h2>How does einsum work?<a class="headerlink" href="#how-does-einsum-work" title="Permalink to this heading">#</a></h2>
+<p>Here’s a simple (but not completely trivial) example. Take the following two arrays:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">],</span>
+              <span class="p">[</span> <span class="mi">4</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span>  <span class="mi">6</span><span class="p">,</span>  <span class="mi">7</span><span class="p">],</span>
+              <span class="p">[</span> <span class="mi">8</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">]])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We will multiply A and B element-wise and then sum along the rows of the new array. In “normal” NumPy we’d write:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">A</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">B</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[ 0  0  0  0]
+ [ 4  5  6  7]
+ [16 18 20 22]]
+[ 0 22 76]
+</pre></div>
+</div>
+</div>
+</div>
+<p>So here, the indexing operation on A lines up the first axes of the two arrays so that the multiplication can be broadcast.
+The rows of the array of products is then summed to return the answer.</p>
+<p>Now if we wanted to use einsum instead, we could write:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([ 0, 22, 76])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="here-is-what-happens-next">
+<h2>Here is what happens next:<a class="headerlink" href="#here-is-what-happens-next" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>A has one axis; we’ve labelled it i. And B has two axes; we’ve labelled axis 0 as i and axis 1 as j.</p></li>
+<li><p>By repeating the label i in both input arrays, we are telling einsum that these two axes should be multiplied together. In other words, we’re multiplying array A with each column of array B, just like A[:, np.newaxis] * B does.</p></li>
+<li><p>Notice that j does not appear as a label in our desired output; we’ve just used i (we want to end up with a 1D array). By omitting the label, we’re telling einsum to sum along this axis. In other words, we’re summing the rows of the products, just like .sum(axis=1) does.</p></li>
+</ul>
+<p>That’s basically all you need to know to use einsum. It helps to play about a little; if we leave both labels in the output, ‘i,ij-&gt;ij’, we get back a 2D array of products (same as A[:, np.newaxis] * B). If we say no output labels, ‘i,ij-&gt;, we get back a single number (same as doing (A[:, np.newaxis] * B).sum()).</p>
+<p>The great thing about einsum however, is that is does not build a temporary array of products first; it just sums the products as it goes. This can lead to big savings in memory use.</p>
+<p><a class="reference external" href="https://stackoverflow.com/questions/26089893/understanding-numpys-einsum">https://stackoverflow.com/questions/26089893/understanding-numpys-einsum</a></p>
+</section>
+<section id="a-dot-product-between-a-vector-and-a-list-of-vectors">
+<h2>a. dot product between a vector and a list of vectors<a class="headerlink" href="#a-dot-product-between-a-vector-and-a-list-of-vectors" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">]])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># dot product a vector and a list of vectors</span>
+<span class="n">dot</span> <span class="o">=</span> <span class="n">b</span> <span class="o">@</span> <span class="n">a</span>    <span class="c1"># can not use dot = a @ b</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[ 3  6 -9 -9]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># use einsum</span>
+<span class="n">dot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,j-&gt;i&#39;</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[ 3  6 -9 -9]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="n">dot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,j-&gt;i&#39;</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1.19 µs ± 12.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="n">dot</span> <span class="o">=</span> <span class="n">b</span> <span class="o">@</span> <span class="n">a</span> 
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>751 ns ± 2.51 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="b-dot-product-between-2-vector">
+<h2>b. dot product between 2 vector<a class="headerlink" href="#b-dot-product-between-2-vector" title="Permalink to this heading">#</a></h2>
+<p>equivalent to element-wise multiply 2 vectors a*b
+$<span class="math notranslate nohighlight">\( d = \sum_{i=1}^{n}{a_i.b_i} = a_ib_i \)</span>$</p>
+<ul class="simple">
+<li><p>a*b = np.einsum(‘i,i-&gt;i’,a,b)</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i-&gt;i&#39;</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[ 2  3  4 10 18]
+[ 2  3  4 10 18]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="n">a</span><span class="o">*</span><span class="n">b</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>349 ns ± 8.74 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i-&gt;i&#39;</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1.16 µs ± 7.7 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([1., 1., 1., 1., 1.])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="c-element-wise-multiply-3-vectors">
+<h2>c. element-wise multiply 3 vectors<a class="headerlink" href="#c-element-wise-multiply-3-vectors" title="Permalink to this heading">#</a></h2>
+<p>a<em>b</em>c = np.einsum(‘i,i,i-&gt;i’,a,b,c)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i,i-&gt;i&#39;</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">c</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[ 4  9 16 20 36]
+[ 4  9 16 20 36]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">c</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>706 ns ± 102 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it
+<span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i,i-&gt;i&#39;</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1.72 µs ± 6.89 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="d-multiply-2-matrix-rotation-matrix">
+<h2>d. multiply 2 matrix (rotation matrix)<a class="headerlink" href="#d-multiply-2-matrix-rotation-matrix" title="Permalink to this heading">#</a></h2>
+<p>np.einsum(‘ij,jk’, a, b) describes traditional matrix multiplication and is equivalent to np.matmul(a,b).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">]])</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">R</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[ 5 10 13]
+ [10 20 26]
+ [15 30 39]
+ [20 40 52]
+ [24 48 62]]
+[[ 5 10 13]
+ [10 20 26]
+ [15 30 39]
+ [20 40 52]
+ [24 48 62]]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="multiply-1-matrix-with-each-row-of-another-matrix-3d-rotation">
+<h2>5. multiply 1 matrix with each row of another matrix (3D Rotation)<a class="headerlink" href="#multiply-1-matrix-with-each-row-of-another-matrix-3d-rotation" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">]])</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">R</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+    
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ik,jk&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>      <span class="c1"># multiply matrix R with each row of a</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[ 5 10 13]
+ [10 20 26]
+ [15 30 39]
+ [20 40 52]
+ [24 48 62]]
+[[ 5 10 13]
+ [10 20 26]
+ [15 30 39]
+ [20 40 52]
+ [24 48 62]]
+[[ 6.  7. 15.]
+ [12. 14. 30.]
+ [18. 21. 45.]
+ [24. 28. 60.]
+ [29. 35. 71.]]
+[[ 6  7 15]
+ [12 14 30]
+ [18 21 45]
+ [24 28 60]
+ [29 35 71]]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[0 1 2 3 4]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">:]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0, 1, 2, 3, 4])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./notebook/2_code_tips"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">compute Euclidean Distance</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#einsum">Einsum</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#numpy-linalg-norm">numpy.linalg.norm</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scipy-spatial-distance">scipy.spatial.distance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-performance">test performance</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#dot-product">2. Dot product</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-does-einsum-do">What does einsum do?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-does-einsum-work">How does einsum work?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#here-is-what-happens-next">Here is what happens next:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-dot-product-between-a-vector-and-a-list-of-vectors">a. dot product between a vector and a list of vectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#b-dot-product-between-2-vector">b. dot product between 2 vector</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#c-element-wise-multiply-3-vectors">c. element-wise multiply 3 vectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-multiply-2-matrix-rotation-matrix">d. multiply 2 matrix (rotation matrix)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiply-1-matrix-with-each-row-of-another-matrix-3d-rotation">5. multiply 1 matrix with each row of another matrix (3D Rotation)</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By thangckt
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

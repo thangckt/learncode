@@ -1,0 +1,1131 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>I. Curve fitting (scipy) &#8212; Modeling materials with MD</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebook/2_code_tips/6_fitting_roots';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Modeling materials with MD</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Analysis with Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../1_data_analysis/README.html">hello</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Code snippets</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="README.html">hello</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_jupyter_notebook.html">Jupyter Notebook</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="2_Matplotlib.html">Tips to use Matplotlib</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="3_Ovito.html">Visuallize by Ovito</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_Pandas.html">work with Pandas</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="5_Regular_Expressions.html">Regular Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_colab_github.html">Github</a></li>
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/0_intro.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/1_unittest.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/2_multiprocessing.html">Multiprocessing</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">C++</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/0_setup_devCpp.html">Dev C++</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/2_oop1_intro.html">Oreinted Object Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/3_oop2_constructor.html">Constructor and Destructor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/4_oop3_inheritance.html">Inheritance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/5_oop4_polymorphism.html">Polymorphism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/6_oop5_h_cpp_file.html">Separate header and cpp file</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Webapp</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/0_overview.html">PyScript: Python in the Web Browser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/1_chatGPT.html">Using openAI web by seledium</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/thangckt/note_code/edit/main/notebook/2_code_tips/6_fitting_roots.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button"
+   title="Suggest edit"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>I. Curve fitting (scipy)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">I. Curve fitting (scipy)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#i-1-curve-fitting-with-scipy-opmtimize">I.1. Curve fitting with scipy.opmtimize</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#i-2-curve-fitting-with-lmfit">I.2. Curve fitting with LMFIT</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-reults">analysis reults</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#built-in-fitting-models-in-the-models-module">Built-in Fitting Models in the models module:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-defined-forms">USER defined forms</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-finding-root-of-a-non-linear-function">II. Finding Root of a non-linear function</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#find-intersect-of-2-lines-of-decrete-datas-using-shapely">2. Find intersect of 2 lines of decrete datas (using Shapely)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#note-for-multiline-of-geometrycollection-type">Note for MULTILINE of GEOMETRYCOLLECTION type</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#finding-root">finding root</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-propagation-of-uncertainty">II. Propagation of uncertainty</a></li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <p><a href="https://colab.research.google.com/github/thangckt/note_ml/blob/main/notebook/2_code_tips/6_fitting_roots.ipynb" target="_parent"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
+<section class="tex2jax_ignore mathjax_ignore" id="i-curve-fitting-scipy">
+<h1>I. Curve fitting (scipy)<a class="headerlink" href="#i-curve-fitting-scipy" title="Permalink to this heading">#</a></h1>
+<section id="i-1-curve-fitting-with-scipy-opmtimize">
+<h2>I.1. Curve fitting with scipy.opmtimize<a class="headerlink" href="#i-1-curve-fitting-with-scipy-opmtimize" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://scipy-lectures.org/intro/scipy/auto_examples/plot_curve_fit.html">https://scipy-lectures.org/intro/scipy/auto_examples/plot_curve_fit.html</a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">x_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">y_data</span> <span class="o">=</span> <span class="mf">2.9</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">x_data</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/39439daf44905120154c12dc5e032164db9539d7f6e5bd746479a0f40e108cdb.png" src="../../_images/39439daf44905120154c12dc5e032164db9539d7f6e5bd746479a0f40e108cdb.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now fit a simple sine function to the data</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span>
+<span class="k">def</span> <span class="nf">test_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+<span class="c1">##-- fitting</span>
+<span class="n">params</span><span class="p">,</span> <span class="n">params_covariance</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span><span class="n">test_func</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[3.0384518  1.52782469]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params_covariance</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[ 0.04632637, -0.00058567],
+       [-0.00058567,  0.00057484]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Data&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">test_func</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Fitted function&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/98dbe33aaf87792d230346e613171506ae220f84794e7eda683950e4087aeb5e.png" src="../../_images/98dbe33aaf87792d230346e613171506ae220f84794e7eda683950e4087aeb5e.png" />
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="i-2-curve-fitting-with-lmfit">
+<h1>I.2. Curve fitting with LMFIT<a class="headerlink" href="#i-2-curve-fitting-with-lmfit" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">https://lmfit.github.io/lmfit-py/model.html</a>    <br>
+The main task is to write an “objective function”. The chi-square <span class="math notranslate nohighlight">\((\chi^2)\)</span> statistic is often defined as:
+$<span class="math notranslate nohighlight">\( \chi^2 =  \sum_i^{N} \frac{[y^{\rm meas}_i - y_i^{\rm model}({\bf{v}})]^2}{\epsilon_i^2} \)</span><span class="math notranslate nohighlight">\(
+where \)</span>y_i^{\rm meas}<span class="math notranslate nohighlight">\( is the set of measured data, \)</span>y_i^{\rm
+model}({\bf{v}})<span class="math notranslate nohighlight">\( is the model calculation, \)</span>\bf{v}<span class="math notranslate nohighlight">\( is the set of variables in the model to be optimized in the fit, and \)</span>\epsilon_i<span class="math notranslate nohighlight">\( is the estimated uncertainty in the data. &lt;br&gt;
+In a traditional non-linear fit, one writes an objective function that takes the variable values and calculates the residual array \)</span>y^{\rm
+meas}_i - y_i^{\rm model}({\bf{v}})<span class="math notranslate nohighlight">\(, or the residual array scaled by the data uncertainties, \)</span>[y^{\rm meas}_i - y_i^{\rm
+model}({\bf{v}})]/{\epsilon_i}$, or some other weighting factor.  <br>
+Non-Linear Least-Squares Minimization and Curve-Fitting for Python (LMFIT) is the package provides simple tools to help you build complex fitting models for non-linear least-squares problems. The Model class in lmfit (lmfit.Model) provides a simple and flexible approach to curve-fitting problems.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## work with lmfit.Model</span>
+<span class="kn">from</span> <span class="nn">lmfit</span> <span class="kn">import</span> <span class="n">Model</span>
+
+<span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">amp</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">wid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;1-d gaussian: gaussian(x, amp, cen, wid)&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">amp</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">wid</span><span class="p">))</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">cen</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">wid</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="n">gmodel</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">gaussian</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;parameter names: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gmodel</span><span class="o">.</span><span class="n">param_names</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;independent variables: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gmodel</span><span class="o">.</span><span class="n">independent_vars</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>parameter names: [&#39;amp&#39;, &#39;cen&#39;, &#39;wid&#39;]
+independent variables: [&#39;x&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gmodel</span><span class="o">.</span><span class="n">param_names</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;amp&#39;, &#39;cen&#39;, &#39;wid&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># generate data</span>
+<span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="c1"># mean and standard deviation</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="c1">##--</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">s</span>
+<span class="c1">##-- fitting</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">gmodel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">amp</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">cen</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">wid</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">fit_report</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[Model]]
+    Model(gaussian)
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 70
+    # data points      = 1000
+    # variables        = 3
+    chi-square         = 250.103847
+    reduced chi-square = 0.25085642
+    Akaike info crit   = -1379.87906
+    Bayesian info crit = -1365.15580
+[[Variables]]
+    amp: -1.50918372 +/- 87647.1572 (5807587.00%) (init = 5)
+    cen:  2.61049184 +/- 5316.96789 (203676.86%) (init = 0.5)
+    wid:  0.24714425 +/- 5811.24995 (2351359.56%) (init = 1)
+[[Correlations]] (unreported correlations are &lt; 0.100)
+    C(amp, wid) =  1.000
+    C(amp, cen) =  1.000
+    C(cen, wid) =  1.000
+</pre></div>
+</div>
+</div>
+</div>
+<section id="analysis-reults">
+<h2>analysis reults<a class="headerlink" href="#analysis-reults" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://lmfit.github.io/lmfit-py/fitting.html">https://lmfit.github.io/lmfit-py/fitting.html</a>
+When comparing fits with different numbers of varying parameters, one typically selects the model with <strong>lowest</strong> reduced chi-square, Akaike information criterion, and/or Bayesian information criterion. Generally, the Bayesian information criterion is considered the most conservative of these statistics.
+<a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html#modelresult-methods">https://lmfit.github.io/lmfit-py/model.html#modelresult-methods</a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># result.best_fit</span>
+<span class="n">result</span><span class="o">.</span><span class="n">params</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table><tr><th> name </th><th> value </th><th> standard error </th><th> relative error </th><th> initial value </th><th> min </th><th> max </th><th> vary </th></tr><tr><td> amp </td><td> -1.50918372 </td><td>  87647.1572 </td><td> (5807587.00%) </td><td> 5 </td><td>        -inf </td><td>         inf </td><td> True </td></tr><tr><td> cen </td><td>  2.61049184 </td><td>  5316.96789 </td><td> (203676.86%) </td><td> 0.5 </td><td>        -inf </td><td>         inf </td><td> True </td></tr><tr><td> wid </td><td>  0.24714425 </td><td>  5811.24995 </td><td> (2351359.56%) </td><td> 1 </td><td>        -inf </td><td>         inf </td><td> True </td></tr></table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result</span><span class="o">.</span><span class="n">chisqr</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>250.10384654228395
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Goodness-of-Fit Statistics</span>
+<span class="n">result</span><span class="o">.</span><span class="n">minimize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><h2>Fit Statistics</h2><table><tr><td>fitting method</td><td>leastsq</td><td></td></tr><tr><td># function evals</td><td>10</td><td></td></tr><tr><td># data points</td><td>1000</td><td></td></tr><tr><td># variables</td><td>3</td><td></td></tr><tr><td>chi-square</td><td> 250.103831</td><td></td></tr><tr><td>reduced chi-square</td><td> 0.25085640</td><td></td></tr><tr><td>Akaike info crit.</td><td>-1379.87912</td><td></td></tr><tr><td>Bayesian info crit.</td><td>-1365.15586</td><td></td></tr></table><h2>Variables</h2><table><tr><th> name </th><th> value </th><th> standard error </th><th> relative error </th><th> initial value </th><th> min </th><th> max </th><th> vary </th></tr><tr><td> amp </td><td> -1.53268785 </td><td>  200335.972 </td><td> (13070891.94%) </td><td> -1.5091837154387298 </td><td>        -inf </td><td>         inf </td><td> True </td></tr><tr><td> cen </td><td>  2.60975030 </td><td>  10139.4365 </td><td> (388521.33%) </td><td> 2.610491842162422 </td><td>        -inf </td><td>         inf </td><td> True </td></tr><tr><td> wid </td><td>  0.24625289 </td><td>  11339.7654 </td><td> (4604926.87%) </td><td> 0.24714424978824912 </td><td>        -inf </td><td>         inf </td><td> True </td></tr></table><h2>Correlations (unreported correlations are < 0.100)</h2><table><tr><td>amp</td><td>wid</td><td>1.0000</td></tr><tr><td>amp</td><td>cen</td><td>1.0000</td></tr><tr><td>cen</td><td>wid</td><td>1.0000</td></tr></table></div></div>
+</div>
+</section>
+<section id="built-in-fitting-models-in-the-models-module">
+<h2>Built-in Fitting Models in the models module:<a class="headerlink" href="#built-in-fitting-models-in-the-models-module" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://lmfit.github.io/lmfit-py/builtin_models.html#builtin-models-chapter">https://lmfit.github.io/lmfit-py/builtin_models.html#builtin-models-chapter</a>  <br>
+Lmfit provides several built-in fitting models in the models module. These pre-defined models each subclass from the Model class and wrap relatively well-known functional forms, such as Gaussians, Lorentzian, and Exponentials</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lmfit</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="n">fun</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">LinearModel</span><span class="p">()</span>
+<span class="n">fun</span><span class="o">.</span><span class="n">param_names</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;slope&#39;, &#39;intercept&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fun</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PolynomialModel</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">fun</span><span class="o">.</span><span class="n">param_names</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;c0&#39;, &#39;c1&#39;, &#39;c2&#39;, &#39;c3&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fun</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">LinearModel</span><span class="p">()</span>
+<span class="n">fun</span><span class="o">.</span><span class="n">param_names</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">fc3727b718ee</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">fun</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">QuadraticModel</span><span class="p">()</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="n">fun</span><span class="o">.</span><span class="n">params</span>
+
+<span class="ne">NameError</span>: name &#39;models&#39; is not defined
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fun</span><span class="o">.</span><span class="n">guess</span><span class="p">()</span><span class="o">.</span><span class="vm">__doc__</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">TypeError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">54</span><span class="o">-</span><span class="mi">26105</span><span class="n">c540052</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">fun</span><span class="o">.</span><span class="n">guess</span><span class="p">()</span><span class="o">.</span><span class="vm">__doc__</span>
+
+<span class="ne">TypeError</span>: guess() missing 1 required positional argument: &#39;data&#39;
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="user-defined-forms">
+<h2>USER defined forms<a class="headerlink" href="#user-defined-forms" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;D:/work/Tool_codes/Tools_Python&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">thaTool</span> 
+<span class="kn">from</span> <span class="nn">lmfit</span> <span class="kn">import</span> <span class="n">Model</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">thaTool</span><span class="o">.</span><span class="n">UserModelLmfit</span><span class="o">.</span><span class="n">Carreau</span><span class="p">)</span>
+<span class="n">myModel</span><span class="o">.</span><span class="n">make_params</span><span class="p">(</span><span class="n">A1</span><span class="o">=-</span><span class="mf">3.3</span><span class="p">,</span> <span class="n">A2</span><span class="o">=-</span><span class="mf">2.9</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">2.2</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">myModel</span><span class="o">.</span><span class="n">param_names</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;A1&#39;, &#39;A2&#39;, &#39;t&#39;, &#39;a&#39;, &#39;n&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">myModel</span><span class="o">.</span><span class="n">init_params</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">AttributeError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
+<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">da6c417bd841</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">myModel</span><span class="o">.</span><span class="n">init_params</span>
+
+<span class="ne">AttributeError</span>: &#39;Model&#39; object has no attribute &#39;init_params&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">myModel</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">thaTool</span><span class="o">.</span><span class="n">UserModelLmfit</span><span class="o">.</span><span class="n">sum_3unNormalGaussian</span><span class="p">)</span>
+<span class="n">myModel</span><span class="o">.</span><span class="n">param_names</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;amp1&#39;, &#39;amp2&#39;, &#39;amp3&#39;, &#39;cen1&#39;, &#39;cen2&#39;, &#39;cen3&#39;, &#39;sigma1&#39;, &#39;sigma2&#39;, &#39;sigma3&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Example</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lmfit</span> <span class="kn">import</span> <span class="n">models</span> 
+<span class="c1">### =============================================================================</span>
+<span class="c1">### Fitting Thermal Expansion Coeff</span>
+<span class="c1">### =============================================================================</span>
+<span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Temp&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;LatConst&#39;</span><span class="p">]</span>
+<span class="n">yModel</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PolynomialModel</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>         <span class="c1"># PolynomialModel(1)</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">yModel</span><span class="o">.</span><span class="n">guess</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">)</span>
+<span class="n">yFit</span> <span class="o">=</span> <span class="n">yModel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">)</span>             <span class="c1"># yFit.best_fit: yValue   , yFit.best_values: coeff</span>
+<span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span> <span class="o">=</span> <span class="n">yFit</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;c0&#39;</span><span class="p">],</span> <span class="n">yFit</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">],</span> <span class="n">yFit</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;c2&#39;</span><span class="p">],</span> <span class="n">yFit</span><span class="o">.</span><span class="n">best_values</span><span class="p">[</span><span class="s1">&#39;c3&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="ii-finding-root-of-a-non-linear-function">
+<h1>II. Finding Root of a non-linear function<a class="headerlink" href="#ii-finding-root-of-a-non-linear-function" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root_scalar.html#scipy.optimize.root_scalar">https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root_scalar.html#scipy.optimize.root_scalar</a></p>
+<p>Example: find root of equation: <span class="math notranslate nohighlight">\( \large f(x)=(x^3-1) \)</span></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span>
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># only one real root at x = 1</span>
+
+<span class="k">def</span> <span class="nf">fprime</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">3</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+<span class="c1">##--------</span>
+<span class="n">sol</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">root_scalar</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">fprime</span><span class="o">=</span><span class="n">fprime</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;newton&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span> 
+<span class="nb">print</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">function_calls</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1.0
+11
+22
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="find-intersect-of-2-lines-of-decrete-datas-using-shapely">
+<h1>2. Find intersect of 2 lines of decrete datas (using Shapely)<a class="headerlink" href="#find-intersect-of-2-lines-of-decrete-datas-using-shapely" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://stackoverflow.com/questions/28766692/intersection-of-two-graphs-in-python-find-the-x-value">https://stackoverflow.com/questions/28766692/intersection-of-two-graphs-in-python-find-the-x-value</a></p>
+<p><a class="reference external" href="https://stackoverflow.com/questions/28766692/intersection-of-two-graphs-in-python-find-the-x-value/51145981#51145981">https://stackoverflow.com/questions/28766692/intersection-of-two-graphs-in-python-find-the-x-value/51145981#51145981</a></p>
+<p><a class="reference external" href="https://stackoverflow.com/questions/22417842/how-do-i-find-the-intersection-of-two-line-segments">https://stackoverflow.com/questions/22417842/how-do-i-find-the-intersection-of-two-line-segments</a>
+Using Shapely (<a class="reference external" href="https://pypi.python.org/pypi/Shapely">https://pypi.python.org/pypi/Shapely</a>) the code can look as simple as this:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">LineString</span>
+
+<span class="c1"># dataPoint1 = np.array([[0,0], [0.5,0], [1,1], [1.5,0]])</span>
+<span class="n">dataPoint1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">dataPoint2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="c1"># find intersect                                              </span>
+<span class="n">line1</span> <span class="o">=</span> <span class="n">LineString</span><span class="p">(</span><span class="n">dataPoint1</span><span class="p">)</span>
+<span class="n">line2</span> <span class="o">=</span> <span class="n">LineString</span><span class="p">(</span><span class="n">dataPoint2</span><span class="p">)</span>
+
+<span class="n">intersectPoint</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">line2</span><span class="p">)</span>
+<span class="n">Points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">)</span>                  <span class="c1"># Points = np.asarray(intersectPoint).reshape(-1,2)</span>
+<span class="k">if</span> <span class="n">Points</span><span class="o">.</span><span class="n">ndim</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>                      
+    <span class="n">Points</span> <span class="o">=</span> <span class="n">Points</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># plot</span>
+<span class="n">fig1</span><span class="p">,</span><span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ncols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">2.4</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span> 
+
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dataPoint1</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">dataPoint1</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Solid&#39;</span><span class="p">)</span> 
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dataPoint2</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">dataPoint2</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;r-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Liquid&#39;</span><span class="p">)</span> 
+
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">Points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;go&#39;</span> <span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/95337ccbef4592b10defff3cc80ef22a15dd0b364f591e35de4dfa4c4084ec41.png" src="../../_images/95337ccbef4592b10defff3cc80ef22a15dd0b364f591e35de4dfa4c4084ec41.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">shapely.geometry</span> <span class="k">as</span> <span class="nn">geom</span>
+<span class="nb">isinstance</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">,</span> <span class="n">geom</span><span class="o">.</span><span class="n">Point</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## convert POINT type to numpy</span>
+<span class="c1"># https://gis.stackexchange.com/questions/252764/converting-a-list-of-shapely-geometry-to-numpy-array</span>
+
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">intersectPoint</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">TypeError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">8</span><span class="o">-</span><span class="mi">464</span><span class="n">f1cfbe918</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="c1"># https://gis.stackexchange.com/questions/252764/converting-a-list-of-shapely-geometry-to-numpy-array</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> 
+<span class="ne">----&gt; </span><span class="mi">4</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">intersectPoint</span><span class="p">:</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+<span class="ne">TypeError</span>: &#39;Point&#39; object is not iterable
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Points</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">Points</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POINT (0.8333333333333334 0.6666666666666666)
+[[0.83333333 0.66666667]]
+&lt;class &#39;numpy.ndarray&#39;&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">dataPoint1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">dataPoint1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[0.  0. ]
+ [0.5 0. ]
+ [1.  1. ]]
+&lt;class &#39;numpy.ndarray&#39;&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;D:/work/Tool_codes/Tools_Python&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">thaTool</span> 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">LineString</span>
+
+<span class="c1"># dataPoint1 = np.array([[0,0], [0.5,0], [1,1], [1.5,0]])</span>
+<span class="n">dataPoint1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">dataPoint2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="c1"># find intersect                                              </span>
+<span class="n">line1</span> <span class="o">=</span> <span class="n">LineString</span><span class="p">(</span><span class="n">dataPoint1</span><span class="p">)</span>
+<span class="n">line2</span> <span class="o">=</span> <span class="n">LineString</span><span class="p">(</span><span class="n">dataPoint2</span><span class="p">)</span>
+
+<span class="n">Points</span> <span class="o">=</span> <span class="n">thaTool</span><span class="o">.</span><span class="n">intersectPoint</span><span class="p">(</span><span class="n">dataPoint1</span><span class="p">,</span> <span class="n">dataPoint2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Points</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[0.83333333 0.66666667]]
+</pre></div>
+</div>
+</div>
+</div>
+<section id="note-for-multiline-of-geometrycollection-type">
+<h2>Note for MULTILINE of GEOMETRYCOLLECTION type<a class="headerlink" href="#note-for-multiline-of-geometrycollection-type" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://gis.stackexchange.com/questions/252764/converting-a-list-of-shapely-geometry-to-numpy-array">https://gis.stackexchange.com/questions/252764/converting-a-list-of-shapely-geometry-to-numpy-array</a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;Helmholtz_RSpath_Solid_Bulk_100K_Langevin_noCM.dat&#39;</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;Helmholtz_RSpath_Liquid_Bulk_1300K_Langevin_noCM.dat&#39;</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">shapely.geometry</span> <span class="k">as</span> <span class="nn">geom</span>
+
+<span class="c1"># find intersect                                              </span>
+<span class="n">line1</span> <span class="o">=</span> <span class="n">LineString</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="n">line2</span> <span class="o">=</span> <span class="n">LineString</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+<span class="n">intersectPoint</span> <span class="o">=</span> <span class="n">line1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">line2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GEOMETRYCOLLECTION (POINT (903.122 -3.633331), POINT (903.125 -3.633333), POINT (903.133 -3.633338), POINT (903.136 -3.63334), LINESTRING (903.127 -3.633334, 903.128 -3.633335), LINESTRING (903.128 -3.633335, 903.129 -3.633336), LINESTRING (903.129 -3.633336, 903.13 -3.633336), LINESTRING (903.13 -3.633336, 903.131 -3.633337))
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">list_arrays</span> <span class="o">=</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">intersectPoint</span> <span class="p">]</span>
+<span class="n">list_arrays</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[array([903.122   ,  -3.633331]),
+ array([903.125   ,  -3.633333]),
+ array([903.133   ,  -3.633338]),
+ array([903.136  ,  -3.63334]),
+ array([903.127   ,  -3.633334]),
+ array([903.128   ,  -3.633335]),
+ array([903.129   ,  -3.633336]),
+ array([903.13    ,  -3.633336])]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">,</span> <span class="n">geom</span><span class="o">.</span><span class="n">MultiLineString</span><span class="p">):</span>
+    <span class="n">list_arrays</span> <span class="o">=</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">intersectPoint</span> <span class="p">]</span>
+    <span class="n">Points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">list_arrays</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span><span class="n">Points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">)</span>                  <span class="c1"># Points = np.asarray(intersectPoint).reshape(-1,2)</span>
+    
+<span class="nb">print</span><span class="p">(</span><span class="n">Points</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">TypeError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">24</span><span class="o">-</span><span class="n">d2309f6ad041</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span>     <span class="n">list_arrays</span> <span class="o">=</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">intersectPoint</span> <span class="p">]</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span>     <span class="n">Points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">list_arrays</span><span class="p">)</span>
+<span class="ne">----&gt; </span><span class="mi">4</span> <span class="k">else</span><span class="p">:</span><span class="n">Points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">)</span>                  <span class="c1"># Points = np.asarray(intersectPoint).reshape(-1,2)</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span> 
+<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="nb">print</span><span class="p">(</span><span class="n">Points</span><span class="p">)</span>
+
+<span class="ne">TypeError</span>: float() argument must be a string or a number, not &#39;Point&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## USE this way</span>
+<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">,</span> <span class="n">geom</span><span class="o">.</span><span class="n">Point</span><span class="p">):</span>
+    <span class="n">Points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">)</span>                  <span class="c1"># Points = np.asarray(intersectPoint).reshape(-1,2)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">list_arrays</span> <span class="o">=</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">intersectPoint</span> <span class="p">]</span>
+    <span class="n">Points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">list_arrays</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Points</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[903.122   ,  -3.633331],
+       [903.125   ,  -3.633333],
+       [903.133   ,  -3.633338],
+       [903.136   ,  -3.63334 ],
+       [903.127   ,  -3.633334],
+       [903.128   ,  -3.633335],
+       [903.129   ,  -3.633336],
+       [903.13    ,  -3.633336]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">list_arrays</span> <span class="o">=</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">geom</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">intersectPoint</span> <span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">list_arrays</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[array([884.7016  ,  -3.620597]), array([884.7046  ,  -3.620599]), array([884.706 ,  -3.6206]), array([884.708   ,  -3.620601]), array([884.711   ,  -3.620603])]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">list_arrays</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[884.7016    -3.620597]
+ [884.7046    -3.620599]
+ [884.706     -3.6206  ]
+ [884.708     -3.620601]
+ [884.711     -3.620603]]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>shapely.geometry.multilinestring.MultiLineString
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">shapely.geometry</span> <span class="k">as</span> <span class="nn">geom</span>
+<span class="nb">isinstance</span><span class="p">(</span><span class="n">intersectPoint</span><span class="p">,</span> <span class="n">geom</span><span class="o">.</span><span class="n">MultiLineString</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Points</span> <span class="o">=</span> <span class="n">thaTool</span><span class="o">.</span><span class="n">intersectPoint</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Points</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[884.7016    -3.620597]
+ [884.7046    -3.620599]
+ [884.706     -3.6206  ]
+ [884.708     -3.620601]
+ [884.711     -3.620603]]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="finding-root">
+<h2>finding root<a class="headerlink" href="#finding-root" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="http://people.duke.edu/~ccc14/sta-663-2016/13_Optimization.html#Finding-roots">http://people.duke.edu/~ccc14/sta-663-2016/13_Optimization.html#Finding-roots</a></p>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="ii-propagation-of-uncertainty">
+<h1>II. Propagation of uncertainty<a class="headerlink" href="#ii-propagation-of-uncertainty" title="Permalink to this heading">#</a></h1>
+<p>to estimate Error of y, due to error of parameters in fitting</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Propagation_of_uncertainty">https://en.wikipedia.org/wiki/Propagation_of_uncertainty</a></p>
+<p><a class="reference external" href="https://stackoverflow.com/questions/54843932/how-do-i-specify-error-of-y-variable-when-fitting-with-lmfit">https://stackoverflow.com/questions/54843932/how-do-i-specify-error-of-y-variable-when-fitting-with-lmfit</a></p>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./notebook/2_code_tips"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">I. Curve fitting (scipy)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#i-1-curve-fitting-with-scipy-opmtimize">I.1. Curve fitting with scipy.opmtimize</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#i-2-curve-fitting-with-lmfit">I.2. Curve fitting with LMFIT</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-reults">analysis reults</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#built-in-fitting-models-in-the-models-module">Built-in Fitting Models in the models module:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-defined-forms">USER defined forms</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-finding-root-of-a-non-linear-function">II. Finding Root of a non-linear function</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#find-intersect-of-2-lines-of-decrete-datas-using-shapely">2. Find intersect of 2 lines of decrete datas (using Shapely)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#note-for-multiline-of-geometrycollection-type">Note for MULTILINE of GEOMETRYCOLLECTION type</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#finding-root">finding root</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-propagation-of-uncertainty">II. Propagation of uncertainty</a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By thangckt
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

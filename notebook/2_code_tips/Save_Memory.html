@@ -1,0 +1,841 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Notes on How to write a memory efficient Python program? &#8212; Modeling materials with MD</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebook/2_code_tips/Save_Memory';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Modeling materials with MD</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Data Analysis with Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../1_data_analysis/README.html">hello</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Code snippets</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="README.html">hello</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1_jupyter_notebook.html">Jupyter Notebook</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="2_Matplotlib.html">Tips to use Matplotlib</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="3_Ovito.html">Visuallize by Ovito</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_Pandas.html">work with Pandas</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="5_Regular_Expressions.html">Regular Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0_colab_github.html">Github</a></li>
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Python</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/0_intro.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/1_unittest.html">Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_learnPy/2_multiprocessing.html">Multiprocessing</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">C++</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/0_setup_devCpp.html">Dev C++</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/2_oop1_intro.html">Oreinted Object Programming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/3_oop2_constructor.html">Constructor and Destructor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/4_oop3_inheritance.html">Inheritance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/5_oop4_polymorphism.html">Polymorphism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_learnCpp/6_oop5_h_cpp_file.html">Separate header and cpp file</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Webapp</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/0_overview.html">PyScript: Python in the Web Browser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5_webapp/1_chatGPT.html">Using openAI web by seledium</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/thangckt/note_code/edit/main/notebook/2_code_tips/Save_Memory.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button"
+   title="Suggest edit"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Notes on How to write a memory efficient Python program?</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Notes on How to write a memory efficient Python program?</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#i-measure-memory-in-jupyter">I. Measure memory in Jupyter</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#practice-1-try-not-to-blow-off-memory">Practice 1: Try Not To Blow Off Memory!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#note-with-list">Note with list</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#do-not-create-a-huge-string-as-the-full-file-body-to-be-written-at-once-use-writelines">1. do not create a huge string as the full file body to be written at once, use “writelines”</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-slots-when-defining-a-python-class">2. Use slots when defining a Python class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-using-generator">II. Using Generator</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-1-eager-eavaluation-vs-lazy-evaluation-return-vs-yield">II.1. eager eavaluation VS. lazy evaluation (return vs. yield)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-2-generator-function-yield">II.2. generator function (yield)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-3-access-item-in-generator">II.3. access item in generator</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#access-whole-generator">access whole generator:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#access-1-item-in-generator">access 1 item in generator:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="notes-on-how-to-write-a-memory-efficient-python-program">
+<h1>Notes on How to write a memory efficient Python program?<a class="headerlink" href="#notes-on-how-to-write-a-memory-efficient-python-program" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://medium.com/datadriveninvestor/how-does-memory-allocation-work-in-python-and-other-languages-d2d8a9398543">https://medium.com/datadriveninvestor/how-does-memory-allocation-work-in-python-and-other-languages-d2d8a9398543</a></p>
+<section id="i-measure-memory-in-jupyter">
+<h2>I. Measure memory in Jupyter<a class="headerlink" href="#i-measure-memory-in-jupyter" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li></li>
+</ol>
+<p><a class="reference external" href="https://timothymonteath.com/articles/monitoring_memory_usage/">https://timothymonteath.com/articles/monitoring_memory_usage/</a> <br>
+pip install memory_profiler</p>
+<ol class="arabic simple" start="2">
+<li><p>resource built-in module
+<a class="reference external" href="https://docs.python.org/2/library/resource.html">https://docs.python.org/2/library/resource.html</a></p></li>
+<li><p>sys.getsizeof
+<a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.getsizeof">https://docs.python.org/3/library/sys.html#sys.getsizeof</a></p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> memory_profiler
+<span class="o">%</span><span class="k">memit</span> a = range(0, 10)
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The memory_profiler extension is already loaded. To reload it, use:
+  %reload_ext memory_profiler
+peak memory: 51.91 MiB, increment: 0.00 MiB
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>range(0, 10)
+&lt;class &#39;range&#39;&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>48
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="practice-1-try-not-to-blow-off-memory">
+<h2>Practice 1: Try Not To Blow Off Memory!<a class="headerlink" href="#practice-1-try-not-to-blow-off-memory" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://www.codementor.io/satwikkansal/python-practices-for-efficient-code-performance-memory-and-usability-aze6oiq65">https://www.codementor.io/satwikkansal/python-practices-for-efficient-code-performance-memory-and-usability-aze6oiq65</a> <br>
+Unlike in C/C++, Python’s interpreter performs the memory management and users have no control over it. However, greater insight into how things work and different ways to do things can help you minimize your program’s memory usage.</p>
+<ul class="simple">
+<li><p>Use generators to calculate large sets of results
+<a class="reference external" href="https://jeffknupp.com/blog/2013/04/07/improve-your-python-yield-and-generators-explained/">https://jeffknupp.com/blog/2013/04/07/improve-your-python-yield-and-generators-explained/</a> <br>
+<a class="reference external" href="https://www.freecodecamp.org/news/how-and-why-you-should-use-python-generators-f6fb56650888/">https://www.freecodecamp.org/news/how-and-why-you-should-use-python-generators-f6fb56650888/</a></p></li>
+<li><p>Don’t use + for generating long strings, use ‘’.join(iterable_object)</p></li>
+<li><p>Use slots when defining a Python class
+<a class="reference external" href="https://stackoverflow.com/questions/472000/usage-of-slots">https://stackoverflow.com/questions/472000/usage-of-slots</a></p></li>
+<li><p>Python Idioms and efficiency
+<a class="reference external" href="https://www.memonic.com/user/pneff/folder/python/id/1bufp">https://www.memonic.com/user/pneff/folder/python/id/1bufp</a>
+<a class="reference external" href="https://google.github.io/styleguide/pyguide.html">https://google.github.io/styleguide/pyguide.html</a></p></li>
+<li><p>use built-in function whenever possible</p></li>
+<li><p>create smaller functions so each variable has a shorter lifetime between creation and being dereferenced when the namespace is removed at function exit.</p></li>
+<li><p>calling gc.collect() yourself at the end of a loop can help avoid fragmenting memory, which in turn helps keep performance up. I’ve seen this make a significant difference (~20% runtime IIRC)</p></li>
+<li><p>Some methods for reduce memory
+<a class="reference external" href="https://habr.com/en/post/458518/">https://habr.com/en/post/458518/</a></p></li>
+<li><p>memory of usage: np.array &lt; Tuple &lt; List</p></li>
+<li><p>memory of usage: list-of-arrays &lt; array-of-arrays</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># list vs tuple vs np.array</span>
+<span class="n">a</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;class &#39;list&#39;&gt; &lt;class &#39;tuple&#39;&gt; &lt;class &#39;numpy.ndarray&#39;&gt;
+288
+208
+176
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
+2
+2
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># array-of-arrays VS. list-of-arrays VS. list-of-lists</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))])</span>
+<span class="n">c</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[array([0, 1, 2]) array([0, 1, 2, 3, 4])]
+[array([0, 1, 2]), array([0, 1, 2, 3, 4])]
+[[0, 1, 2], [0, 1, 2, 3, 4]]
+&lt;class &#39;numpy.ndarray&#39;&gt; &lt;class &#39;list&#39;&gt; &lt;class &#39;list&#39;&gt;
+112
+104
+104
+</pre></div>
+</div>
+</div>
+</div>
+<section id="note-with-list">
+<h3>Note with list<a class="headerlink" href="#note-with-list" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Avoid List Slicing</p></li>
+<li><p>try to use “for item in array” for loops over arrays, before using “for index in range(len(array))” to save space and time.</p></li>
+</ul>
+</section>
+<section id="do-not-create-a-huge-string-as-the-full-file-body-to-be-written-at-once-use-writelines">
+<h3>1. do not create a huge string as the full file body to be written at once, use “writelines”<a class="headerlink" href="#do-not-create-a-huge-string-as-the-full-file-body-to-be-written-at-once-use-writelines" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># use writelines</span>
+<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">((</span><span class="n">datum</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">linesep</span><span class="p">)</span> <span class="k">for</span> <span class="n">datum</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c1">#Even better, you could write the file as:</span>
+<span class="n">items</span> <span class="o">=</span> <span class="n">GetData</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">linesep</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="use-slots-when-defining-a-python-class">
+<h3>2. Use slots when defining a Python class<a class="headerlink" href="#use-slots-when-defining-a-python-class" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;D:/work/Tool_codes/Tools_Python/FinalCode_py&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">thaFileLammps</span><span class="o">,</span> <span class="nn">thaTool</span><span class="o">,</span> <span class="nn">thaModel</span>
+
+<span class="c1"># #### read DATA/Dump</span>
+<span class="n">du</span> <span class="o">=</span> <span class="n">thaFileLammps</span><span class="o">.</span><span class="n">DUMP</span><span class="p">()</span>
+<span class="n">du</span><span class="o">.</span><span class="n">fReadDump</span><span class="p">(</span><span class="s1">&#39;SRO_propa_Al_z001_810K_1000.cfg&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">du</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>56
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="ii-using-generator">
+<h1>II. Using Generator<a class="headerlink" href="#ii-using-generator" title="Permalink to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Iterables are any objects you can get an iterator from (list, string, dictionaries, tuples, sets,…), or iterables are objects with a built-in protocol for visiting each element in a certain order.</p></li>
+<li><p>Iterators are objects that let you iterate on iterables.</p></li>
+<li><p>Generator is a lazy “pending list” object. A generator is iterable.</p></li>
+<li><p>yield statement to make “function return” as generator
+<a class="reference external" href="https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do?page=1&amp;amp;tab=votes#tab-top">https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do?page=1&amp;tab=votes#tab-top</a></p></li>
+</ul>
+<p>generator = myYieldingFunction(…)
+x = list(generator)</p>
+<p>generator
+v
+[x[0], …, ???]</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>     generator
+         v
+</pre></div>
+</div>
+<p>[x[0], x[1], …, ???]</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>           generator
+               v
+</pre></div>
+</div>
+<p>[x[0], x[1], x[2], …, ???]</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>                   StopIteration exception
+</pre></div>
+</div>
+<p>[x[0], x[1], x[2]]     done</p>
+<p>list==[x[0], x[1], x[2]]</p>
+<section id="ii-1-eager-eavaluation-vs-lazy-evaluation-return-vs-yield">
+<h2>II.1. eager eavaluation VS. lazy evaluation (return vs. yield)<a class="headerlink" href="#ii-1-eager-eavaluation-vs-lazy-evaluation-return-vs-yield" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Use a list:  will return all element of list, so memory depend all len-of-list</p></li>
+<li><p>Use generator: size of generator is fix, independent on len-of-list
+<a class="reference external" href="https://anandology.com/python-practice-book/iterators.html">https://anandology.com/python-practice-book/iterators.html</a></p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lista</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="n">listb</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">300000</span><span class="p">)]</span>
+<span class="n">mygenerator</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">300000</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">lista</span><span class="p">)</span>
+<span class="c1"># print(listb)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mygenerator</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[1, 2, 3]
+&lt;generator object &lt;genexpr&gt; at 0x00000255D9F8F8C8&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">listb</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">mygenerator</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2678096
+120
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="ii-2-generator-function-yield">
+<h2>II.2. generator function (yield)<a class="headerlink" href="#ii-2-generator-function-yield" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>“Return” sends a specified value back to its caller whereas “Yield” can produce a sequence of values. We should use yield when we want to iterate over a sequence, but don’t want to store the entire sequence in memory. <br></p></li>
+<li><p>Yield are used in Python generators. A generator function is defined like a normal function, but whenever it needs to generate a value, it does so with the yield keyword rather than return. If the body of a def contains yield, the function automatically becomes a generator function.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">simpleGeneratorFun</span><span class="p">():</span> 
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+  
+<span class="c1"># Driver code to check above generator function </span>
+<span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">simpleGeneratorFun</span><span class="p">():</span>  
+    <span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> 
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1
+2
+3
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="ii-3-access-item-in-generator">
+<h2>II.3. access item in generator<a class="headerlink" href="#ii-3-access-item-in-generator" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://stackoverflow.com/questions/2300756/get-the-nth-item-of-a-generator-in-python">https://stackoverflow.com/questions/2300756/get-the-nth-item-of-a-generator-in-python</a></p>
+<section id="access-whole-generator">
+<h3>access whole generator:<a class="headerlink" href="#access-whole-generator" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simpleGen</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">simpleGen</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>   
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0
+2
+4
+6
+8
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simpleGen</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">simpleGen</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> 
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0 0
+1 2
+2 4
+3 6
+4 8
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="access-1-item-in-generator">
+<h3>access 1 item in generator:<a class="headerlink" href="#access-1-item-in-generator" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
+<span class="n">simpleGen</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">n</span><span class="o">=</span><span class="mi">2</span>
+<span class="nb">next</span><span class="p">(</span><span class="n">islice</span><span class="p">(</span><span class="n">simpleGen</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>4
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simpleGen</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="nb">next</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">simpleGen</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simpleGen</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="nb">next</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">simpleGen</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>6
+</pre></div>
+</div>
+</div>
+</div>
+<ul class="simple">
+<li><p>Note: A generator cannot be used morethan 1 time. Solution for this is copying generator useing itertools.tee</p></li>
+<li><p>But if the number of copys too large, it become list again</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./notebook/2_code_tips"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Notes on How to write a memory efficient Python program?</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#i-measure-memory-in-jupyter">I. Measure memory in Jupyter</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#practice-1-try-not-to-blow-off-memory">Practice 1: Try Not To Blow Off Memory!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#note-with-list">Note with list</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#do-not-create-a-huge-string-as-the-full-file-body-to-be-written-at-once-use-writelines">1. do not create a huge string as the full file body to be written at once, use “writelines”</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-slots-when-defining-a-python-class">2. Use slots when defining a Python class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-using-generator">II. Using Generator</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-1-eager-eavaluation-vs-lazy-evaluation-return-vs-yield">II.1. eager eavaluation VS. lazy evaluation (return vs. yield)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-2-generator-function-yield">II.2. generator function (yield)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ii-3-access-item-in-generator">II.3. access item in generator</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#access-whole-generator">access whole generator:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#access-1-item-in-generator">access 1 item in generator:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By thangckt
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
